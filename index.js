@@ -1,9 +1,21 @@
 const express = require('express')
-const { response } = require('express')
+//const { response } = require('express')
+const morgan = require('morgan')
 const app = express()
 
 //tän unohdin!
 app.use(express.json())
+
+morgan.token('body', function (req, res) {
+  return JSON.stringify(res.body)
+})
+
+//TODO: yhdistä, ja body vaan jos POST
+app.use(morgan('tiny'))
+app.use(morgan('body'))
+
+// :body ei toimi
+// app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 let persons = [
   {
@@ -63,7 +75,6 @@ const handleError = (res, statuscode, message) => {
 
 app.post('/api/persons', (req, res) => {
   const body = req.body
-  //console.log('body ', body)
 
   //TODO? if both are missing, combine the message? 
   if (!body.name) {
