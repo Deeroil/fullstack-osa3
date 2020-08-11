@@ -6,6 +6,7 @@ const cors = require('cors')
 const app = express()
 app.use(cors())
 app.use(express.json())
+app.use(express.static('build'))
 
 morgan.token('body', function (req, res) {
   return JSON.stringify(res.body)
@@ -96,7 +97,6 @@ app.post('/api/persons', (req, res) => {
     id: generateId()
   }
 
-  //console.log('person ', person)
   persons = persons.concat(person)
 
   res.json(person)
