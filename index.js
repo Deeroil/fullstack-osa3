@@ -1,5 +1,8 @@
+require('dotenv').config()
 const express = require('express')
-//const { response } = require('express')
+const { response } = require('express')
+const Person = require('./models/person')
+const mongoose = require('mongoose')
 const morgan = require('morgan')
 const cors = require('cors')
 
@@ -50,7 +53,10 @@ app.get('/info', (req, res) => {
 })
 
 app.get('/api/persons', (req, res) => {
-  res.json(persons)
+  Person.find({}).then(result => {
+    res.json(result)
+    mongoose.connection.close()
+  })
 })
 
 app.get('/api/persons/:id', (req, res) => {
