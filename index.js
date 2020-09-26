@@ -22,6 +22,7 @@ app.use(morgan('body'))
 // :body ei toimi
 // app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
+//for testing
 let persons = [
   {
     "name": "Arto Hellas",
@@ -47,6 +48,7 @@ let persons = [
 
 app.get('/info', (req, res) => {
   res.send(
+    //TODO: Fix this to count from Mongo
     `<div>Notebook has info for ${persons.length} people</div>
      <div>${new Date().toString()}</div>`
   )
@@ -55,25 +57,16 @@ app.get('/info', (req, res) => {
 app.get('/api/persons', (req, res) => {
   Person.find({}).then(result => {
     res.json(result)
-    mongoose.connection.close()
   })
 })
 
 app.get('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id)
-  const person = persons.find(p => p.id === id)
-
-  if (person) {
+  Person.findById(req.params.id).then(person => {
     res.json(person)
-  } else {
+  }).catch(error => {
     res.status(404).end()
-  }
+  })
 })
-
-//should we check for used ids? maybe not
-const generateId = () => {
-  return Math.floor(Math.random() * Math.floor(5000))
-}
 
 const handleError = (res, statuscode, message) => {
   return res.status(statuscode).json({
@@ -93,19 +86,19 @@ app.post('/api/persons', (req, res) => {
     return handleError(res, 400, "number missing")
   }
 
-  if (persons.find(p => p.name === body.name)) {
-    return handleError(res, 400, "name must be unique")
-  }
+  //TODO: remove later
+  // if (persons.find(p => p.name === body.name)) {
+  //   return handleError(res, 400, "name must be unique")
+  // }
 
-  const person = {
+  const person = new Person({
     name: body.name,
-    number: body.number,
-    id: generateId()
-  }
+    number: body.number
+  })
 
-  persons = persons.concat(person)
-
-  res.json(person)
+  person.save().then(savedPerson => {
+    res.json(savedPerson)
+  })
 })
 
 app.delete('/api/persons/:id', (req, res) => {
