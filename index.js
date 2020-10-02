@@ -106,11 +106,13 @@ app.post('/api/persons', (req, res) => {
   })
 })
 
-//Fixaa viel
 app.delete('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id)
-  Person.findByIdAndRemove(id).then(res.status(204).end())
+  Person.findByIdAndRemove(req.params.id)
+  .then(result => {
+    res.status(204).end()
+  })
   .catch(error => {
+    console.log(error)
     console.log('error in removing')
   })
   
