@@ -8,50 +8,30 @@ const cors = require('cors')
 
 const app = express()
 app.use(cors())
-app.use(express.json())
 app.use(express.static('build'))
+app.use(express.json())
 
 morgan.token('body', function (req, res) {
   return JSON.stringify(res.body)
 })
 
-//TODO: yhdistä, ja body vaan jos POST
+// :body ei toimi kun post
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
+
+//TODO: yhdistä, ja body vaan jos POST, vai osaako se ite skippaa ei oo body?
 app.use(morgan('tiny'))
 app.use(morgan('body'))
 
-// :body ei toimi
-// app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
-
-//for testing
-let persons = [
-  {
-    "name": "Arto Hellas",
-    "number": "040-123456",
-    "id": 1
-  },
-  {
-    "name": "Ada Lovelace",
-    "number": "39-44-5323523",
-    "id": 2
-  },
-  {
-    "name": "Dan Abramov",
-    "number": "12-43-234345",
-    "id": 3
-  },
-  {
-    "name": "Mary Poppendieck",
-    "number": "39-23-6423122",
-    "id": 4
-  }
-]
+//aa ei se toimi näin :D
+// morgan.format('tinyAndBody', ':tiny :body')
+// app.use(morgan('tinyAndBody'))
 
 app.get('/info', (req, res) => {
-  res.send(
-    //TODO: Fix this to count from Mongo
-    `<div>Notebook has info for ${persons.length} people</div>
-     <div>${new Date().toString()}</div>`
-  )
+  Person.countDocuments().then(result => {
+    res.send(
+      `<div>Phonebook has info for ${result} people</div>
+       <div>${new Date().toString()}</div>`)
+  })
 })
 
 app.get('/api/persons', (req, res) => {
@@ -90,11 +70,6 @@ app.post('/api/persons', (req, res) => {
   if (!body.number) {
     return handleError(res, 400, "number missing")
   }
-
-  //TODO: remove later
-  // if (persons.find(p => p.name === body.name)) {
-  //   return handleError(res, 400, "name must be unique")
-  // }
 
   const person = new Person({
     name: body.name,
