@@ -12,19 +12,10 @@ app.use(express.static('build'))
 app.use(express.json())
 
 morgan.token('body', function (req, res) {
-  return JSON.stringify(res.body)
+  return JSON.stringify(req.body)
 })
 
-// :body ei toimi kun post
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
-
-//TODO: yhdistä, ja body vaan jos POST, vai osaako se ite skippaa ei oo body?
-app.use(morgan('tiny'))
-app.use(morgan('body'))
-
-//aa ei se toimi näin :D
-// morgan.format('tinyAndBody', ':tiny :body')
-// app.use(morgan('tinyAndBody'))
 
 app.get('/info', (req, res) => {
   Person.countDocuments().then(result => {
