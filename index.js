@@ -47,6 +47,20 @@ app.get('/api/persons/:id', (req, res, next) => {
     .catch(error => next(error))
 })
 
+const handleMissingContent = (person, res) => {
+  if (!person.name && !person.number) {
+    return handleContentError(res, 400, "name and number missing")
+  }
+
+  if (!person.name) {
+    return handleContentError(res, 400, "name missing")
+  }
+
+  if (!person.number) {
+    return handleContentError(res, 400, "number missing")
+  }
+}
+
 const handleContentError = (res, statuscode, message) => {
   return res.status(statuscode).json({
     error: `${message}`
@@ -56,15 +70,10 @@ const handleContentError = (res, statuscode, message) => {
 app.post('/api/persons', (req, res) => {
   const body = req.body
 
-  //TODO? if both are missing, combine the message? 
-  if (!body.name) {
-    return handleContentError(res, 400, "name missing")
+  if (!body.name || !body.number) {
+    return handleMissingContent(body, res)
   }
-
-  if (!body.number) {
-    return handleContentError(res, 400, "number missing")
-  }
-
+ 
   const person = new Person({
     name: body.name,
     number: body.number
@@ -73,6 +82,26 @@ app.post('/api/persons', (req, res) => {
   person.save().then(savedPerson => {
     res.json(savedPerson)
   })
+})
+
+app.put('/api/persons/:id', (req, res, next) => {
+  const body = req.body
+
+  const person = {
+    name: body.name,
+    number: body.number
+  }
+
+  //FIX: "NAME was already deleted from the server" when can't update because of missing content. => create a new "message" for this
+  if (!person.name || !person.number) {
+    return handleMissingContent(person, res)
+  }
+  
+  Person.findByIdAndUpdate(req.params.id, person, {new: true})
+    .then(updatedPerson => {
+      res.json(updatedPerson)
+    })
+    .catch(error => next(error))
 })
 
 app.delete('/api/persons/:id', (req, res, next) => {
