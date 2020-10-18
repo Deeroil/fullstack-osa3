@@ -98,7 +98,8 @@ app.put('/api/persons/:id', (req, res, next) => {
     return handleMissingContent(person, res)
   }
   
-  Person.findByIdAndUpdate(req.params.id, person, {new: true}, {runValidators: true})
+  //TODO: find out why runValidators breaks update
+  Person.findByIdAndUpdate(req.params.id, person, {new: true}/*, {runValidators: true}*/)
     .then(updatedPerson => {
       res.json(updatedPerson)
     })
